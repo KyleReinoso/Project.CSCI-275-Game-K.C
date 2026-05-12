@@ -9,3 +9,4 @@ int getNumberOfFlips() {
     cout << "How many coin flips do you want to simulate? ";
     cin >> flips;
     return flips;
+}
