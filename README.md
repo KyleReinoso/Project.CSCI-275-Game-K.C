@@ -1,29 +1,22 @@
-# Project.CSCI-275-Game-K.C
-Project for CSCI 275- Prof.Temidayo
-Game Name [Air Hockey]
+Project.CSCI-275-Game-K.C
+Project for CSCI 275- Prof.Temidayo Game Name [Coin Flip (Single Player)]
 
- Team Members:
- 
- Caleb Nicholson (24614149) – GitHub: @greatest-caleb 
-Kyle Reinoso De La Rosa (24542009) – GitHub: @KyleReinoso 
+Team Members:
 
+Caleb Nicholson (24614149) – GitHub: @greatest-caleb Kyle Reinoso De La Rosa (24542009) – GitHub: @KyleReinoso
 
-Game Description: 
+Game Description:
 
-Our game represents digital air hockey. There would be a white puck going across the screen, and the user would have to use one side of the keyboard (WASD or the arrow keys) to play the game. In order to signify who is who, there will be a color differentiation such as red and blue for the player and the CPU to play the game. The player will have to use the keys in order to get the ball to one side to score a point; the first to reach a score of 7 will win the game.  
+Our game represents a digital coin flip. It is a single player game that consist of heads and tails. When you begin the game, heads or tails will be chosen at random. And when you get many in a row you will have a streak, and if that streak continues you will get +2 points.
 
-Moreover, the player of the left side would have to score to the right, while the CPU on the right side would have to score to the left. This game is a matter of precision and focus; the player should be strategic in how they play because it will end fairly fast. Overall, this interaction would be made possible through precise coding logic that tracks player input, updates object positions, and detects collisions in real time. 
+The main goal of the game is to build the longest streak possible while maximizing your score. Each time the coin lands on the same side as the previous flip, your streak grows, and you earn an additional 2 points. This creates a sense of anticipation with every flip, as the user tries to maintain their streak and push their score higher before the sequence breaks.
 
 Rules:
 
-One player need to be utilizing one side of the keyboard (WASD or the arrow keys)
-The player needs to get to a score of 7 to win the game.
-Hit the puck to the opposite side from which your paddle is positioned
+User needs to establish how much flips they want to do with the coin.
 
+User has to simulate more than one flip in order to see a streak.
 
- Scoring: Points are earned from a player hitting the puck to the farthest side of the screen, which is considered the goal.
+Scoring: Points are earned based on the number of streaks the user has established.
 
-
-Responsibility: 
-Caleb: making sure the puck is working correctly / debugging
-Kyle: making sure the players are able to move their paddles correctly / debugging 
+Responsibility: Caleb: Making sure the main function is working properly / debugging Kyle: Making sure the logic makes sense in the code / debugging
