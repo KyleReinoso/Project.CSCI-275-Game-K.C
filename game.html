@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Coin Flip Streak Game</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background:
+        radial-gradient(ellipse at 30% 20%, rgba(120,80,10,0.18) 0%, transparent 55%),
+        radial-gradient(ellipse at 70% 80%, rgba(60,40,0,0.22) 0%, transparent 55%),
+        linear-gradient(160deg, #1a1208 0%, #0d0a04 50%, #120d02 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Georgia', serif;
+      overflow-x: hidden;
+      padding: 30px 16px;
+    }
+
+    /* ---------- CARD ---------- */
+    .card {
+      width: 100%;
+      max-width: 560px;
+      background: linear-gradient(160deg, #2a1f08 0%, #1a1304 60%, #221900 100%);
+      border-radius: 20px;
+      border: 1px solid #6b4f1a;
+      box-shadow:
+        0 0 0 1px #3a2a08,
+        0 0 60px rgba(180,130,20,0.12),
+        0 30px 80px rgba(0,0,0,0.8),
+        inset 0 1px 0 rgba(255,210,80,0.07);
+      overflow: hidden;
+    }
+
+    /* ---------- HEADER ---------- */
+    .card-header {
+      background: linear-gradient(180deg, #3a2800 0%, #251b00 100%);
+      border-bottom: 1px solid #5a3f10;
+      padding: 24px 32px 20px;
+      text-align: center;
+      position: relative;
+    }
+
+    .card-header::after {
+      content: '';
+      position: absolute;
+      bottom: 0; left: 10%; right: 10%;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(200,160,40,0.4), transparent);
+    }
+
+    .header-label {
+      font-size: 10px;
+      letter-spacing: 5px;
+      color: #9a7030;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .header-title {
+      font-size: 26px;
+      font-weight: bold;
+      color: #f0c040;
+      text-shadow:
+        0 0 20px rgba(240,192,64,0.5),
+        0 2px 4px rgba(0,0,0,0.6);
+      letter-spacing: 2px;
+    }
+
+    .header-sub {
+      font-size: 11px;
+      color: #7a5a20;
+      letter-spacing: 3px;
+      margin-top: 5px;
+      font-style: italic;
+    }
+
+    /* ---------- BODY ---------- */
+    .card-body {
+      padding: 28px 32px 32px;
+    }
+
+    /* ---------- COIN DISPLAY ---------- */
+    .coin-stage {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 28px;
+    }
+
+    .coin {
+      width: 110px;
+      height: 110px;
+      position: relative;
+      perspective: 600px;
+    }
+
+    .coin-inner {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      transform-style: preserve-3d;
+      transition: transform 0.05s;
+    }
+
+    .coin-inner.spinning {
+      animation: coinSpin 0.12s linear infinite;
+    }
+
+    @keyframes coinSpin {
+      0%   { transform: rotateY(0deg) scaleX(1); }
+      25%  { transform: rotateY(90deg) scaleX(0.1); }
+      50%  { transform: rotateY(180deg) scaleX(1); }
+      75%  { transform: rotateY(270deg) scaleX(0.1); }
+      100% { transform: rotateY(360deg) scaleX(1); }
+    }
+
+    .coin-face {
+      position: absolute;
+      inset: 0;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      backface-visibility: hidden;
+    }
+
+    .coin-heads {
+      background: radial-gradient(circle at 38% 35%, #ffe066 0%, #d4a017 40%, #a07010 70%, #7a5008 100%);
+      box-shadow:
+        inset 0 3px 8px rgba(255,240,120,0.5),
+        inset 0 -4px 10px rgba(80,40,0,0.5),
+        0 0 0 4px #8a6010,
+        0 0 0 6px #c09020,
+        0 6px 24px rgba(0,0,0,0.6);
+    }
+
+    .coin-tails {
+      background: radial-gradient(circle at 38% 35%, #d4c060 0%, #b09020 40%, #8a7010 70%, #604800 100%);
+      box-shadow:
+        inset 0 3px 8px rgba(220,200,100,0.4),
+        inset 0 -4px 10px rgba(60,30,0,0.5),
+        0 0 0 4px #7a5808,
+        0 0 0 6px #b08018,
+        0 6px 24px rgba(0,0,0,0.6);
+      transform: rotateY(180deg);
+    }
+
+    .coin-letter {
+      font-size: 42px;
+      font-weight: bold;
+      color: rgba(80,50,0,0.85);
+      text-shadow:
+        0 1px 2px rgba(255,220,80,0.5),
+        0 -1px 2px rgba(60,30,0,0.5);
+      font-family: 'Georgia', serif;
+      letter-spacing: -1px;
+      user-select: none;
+    }
+
+    .coin-ring {
+      position: absolute;
+      inset: 6px;
+      border-radius: 50%;
+      border: 2px solid rgba(180,130,20,0.4);
+      pointer-events: none;
+    }
+
+    /* ---------- STATS ROW ---------- */
+    .stats-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-box {
+      background: rgba(10,7,0,0.5);
+      border: 1px solid #3a2a08;
+      border-radius: 10px;
+      padding: 12px 10px;
+      text-align: center;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .stat-label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: #6a4a18;
+      text-transform: uppercase;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 26px;
+      font-weight: bold;
+      color: #f0c040;
+      text-shadow: 0 0 10px rgba(240,192,64,0.4);
+      line-height: 1;
+    }
+
+    .stat-value.streak-active {
+      color: #ff9a20;
+      text-shadow: 0 0 14px rgba(255,150,30,0.6);
+      animation: streakGlow 0.6s ease infinite alternate;
+    }
+
+    @keyframes streakGlow {
+      from { text-shadow: 0 0 8px rgba(255,150,30,0.5); }
+      to   { text-shadow: 0 0 22px rgba(255,150,30,0.9), 0 0 40px rgba(255,100,0,0.3); }
+    }
+
+    /* ---------- FLIP HISTORY ---------- */
+    .history-box {
+      background: rgba(5,3,0,0.6);
+      border: 1px solid #2a1e06;
+      border-radius: 10px;
+      padding: 14px 16px;
+      margin-bottom: 22px;
+      min-height: 68px;
+      max-height: 120px;
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .history-label {
+      font-size: 9px;
+      letter-spacing: 2px;
+      color: #5a4010;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+    }
+
+    .history-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 5px;
+    }
+
+    .chip {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: bold;
+      font-family: 'Courier New', monospace;
+      flex-shrink: 0;
+      transition: all 0.2s;
+    }
+
+    .chip-H {
+      background: radial-gradient(circle at 38% 35%, #ffe066, #c09020);
+      color: #5a3800;
+      border: 1px solid #a07018;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px 2px rgba(255,240,120,0.4);
+    }
+
+    .chip-T {
+      background: radial-gradient(circle at 38% 35%, #c0b060, #806010);
+      color: #3a2800;
+      border: 1px solid #705010;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.5), inset 0 1px 2px rgba(200,180,80,0.3);
+    }
+
+    .chip-streak {
+      outline: 2px solid #ff8820;
+      box-shadow: 0 0 8px rgba(255,120,20,0.5), 0 2px 6px rgba(0,0,0,0.5);
+    }
+
+    .chip-placeholder {
+      color: #3a2a08;
+      font-size: 20px;
+      width: 100%;
+      text-align: center;
+      font-style: italic;
+      font-size: 12px;
+      letter-spacing: 1px;
+    }
+
+    /* ---------- INPUT AREA ---------- */
+    .input-group {
+      margin-bottom: 14px;
+    }
+
+    .input-label {
+      display: block;
+      font-size: 10px;
+      letter-spacing: 2px;
+      color: #7a5828;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+    }
+
+    .game-input {
+      flex: 1;
+      background: rgba(8,5,0,0.7);
+      border: 1px solid #4a3410;
+      border-radius: 8px;
+      color: #f0c040;
+      font-family: 'Courier New', monospace;
+      font-size: 20px;
+      padding: 11px 16px;
+      outline: none;
+      text-align: center;
+      letter-spacing: 3px;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .game-input:focus {
+      border-color: #9a7030;
+      box-shadow: 0 0 12px rgba(180,130,30,0.25), inset 0 0 8px rgba(180,130,30,0.08);
+      color: #ffe070;
+    }
+
+    .game-input::placeholder {
+      color: #3a2808;
+      letter-spacing: 1px;
+      font-size: 14px;
+    }
+
+    /* ---------- BUTTONS ---------- */
+    .btn {
+      border: none;
+      border-radius: 10px;
+      font-family: 'Georgia', serif;
+      font-size: 13px;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(255,255,255,0.06) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .btn-flip {
+      background: linear-gradient(180deg, #c08820 0%, #8a5c0a 50%, #6a4408 100%);
+      color: #fff8e0;
+      border: 1px solid #d4a030;
+      padding: 12px 22px;
+      text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+      box-shadow:
+        0 4px 14px rgba(180,120,10,0.3),
+        inset 0 1px 0 rgba(255,220,100,0.2);
+      white-space: nowrap;
+    }
+
+    .btn-flip:hover {
+      background: linear-gradient(180deg, #d49a28 0%, #a07012 50%, #7a5010 100%);
+      border-color: #e4b040;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(200,140,20,0.4), inset 0 1px 0 rgba(255,230,120,0.3);
+    }
+
+    .btn-flip:active {
+      transform: translateY(1px);
+      box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+    }
+
+    .btn-flip:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-reset {
+      width: 100%;
+      background: linear-gradient(180deg, #2a1a04 0%, #180e00 100%);
+      color: #8a6828;
+      border: 1px solid #3a2808;
+      padding: 11px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      margin-top: 10px;
+    }
+
+    .btn-reset:hover {
+      background: linear-gradient(180deg, #3a2408 0%, #221400 100%);
+      border-color: #5a3a10;
+      color: #b08838;
+    }
+
+    /* ---------- RESULT BANNER ---------- */
+    .result-banner {
+      display: none;
+      background: linear-gradient(135deg, rgba(240,192,64,0.12) 0%, rgba(180,120,10,0.08) 100%);
+      border: 1px solid #6a4a18;
+      border-radius: 12px;
+      padding: 18px 20px;
+      margin-top: 18px;
+      text-align: center;
+    }
+
+    .result-banner.show { display: block; }
+
+    .result-title {
+      font-size: 12px;
+      letter-spacing: 3px;
+      color: #8a6828;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .result-score {
+      font-size: 48px;
+      font-weight: bold;
+      color: #f0c040;
+      text-shadow:
+        0 0 30px rgba(240,192,64,0.6),
+        0 2px 4px rgba(0,0,0,0.6);
+      line-height: 1;
+    }
+
+    .result-pts {
+      font-size: 14px;
+      color: #9a7828;
+      letter-spacing: 2px;
+      margin-top: 4px;
+    }
+
+    .result-summary {
+      margin-top: 12px;
+      font-size: 12px;
+      color: #6a5020;
+      letter-spacing: 1px;
+      line-height: 1.7;
+    }
+
+    /* ---------- DIVIDER ---------- */
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #3a2808, transparent);
+      margin: 20px 0;
+    }
+
+    /* ---------- RULES ---------- */
+    .rules {
+      background: rgba(5,3,0,0.4);
+      border: 1px solid #2a1e06;
+      border-radius: 8px;
+      padding: 12px 16px;
+      margin-bottom: 22px;
+    }
+
+    .rules-title {
+      font-size: 9px;
+      letter-spacing: 3px;
+      color: #5a4010;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .rules li {
+      font-size: 11px;
+      color: #6a5020;
+      list-style: none;
+      padding: 2px 0;
+      letter-spacing: 0.5px;
+    }
+
+    .rules li::before { content: '◆ '; color: #4a3010; font-size: 8px; }
+
+    /* scrollbar */
+    .history-box::-webkit-scrollbar { width: 4px; }
+    .history-box::-webkit-scrollbar-track { background: transparent; }
+    .history-box::-webkit-scrollbar-thumb { background: #3a2808; border-radius: 4px; }
+  </style>
+</head>
+<body>
+<div class="card">
+
+  <!-- Header -->
+  <div class="card-header">
+    <div class="header-label">CSCI-275 Project</div>
+    <div class="header-title">🪙 COIN FLIP STREAK</div>
+    <div class="header-sub">Fortune Favors the Consistent</div>
+  </div>
+
+  <!-- Body -->
+  <div class="card-body">
+
+    <!-- Coin Visual -->
+    <div class="coin-stage">
+      <div class="coin" id="coin">
+        <div class="coin-inner" id="coin-inner">
+          <div class="coin-face coin-heads">
+            <div class="coin-ring"></div>
+            <span class="coin-letter" id="coin-letter">?</span>
+          </div>
+          <div class="coin-face coin-tails">
+            <div class="coin-ring"></div>
+            <span class="coin-letter">T</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="stats-row">
+      <div class="stat-box">
+        <div class="stat-label">Flips Left</div>
+        <div class="stat-value" id="stat-left">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Streak</div>
+        <div class="stat-value" id="stat-streak">—</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-label">Score</div>
+        <div class="stat-value" id="stat-score">0</div>
+      </div>
+    </div>
+
+    <!-- History -->
+    <div class="history-box">
+      <div class="history-label">Flip History</div>
+      <div class="history-chips" id="history-chips">
+        <span class="chip-placeholder">No flips yet — enter a number below and press Flip!</span>
+      </div>
+    </div>
+
+    <!-- Rules -->
+    <div class="rules">
+      <div class="rules-title">How to Score</div>
+      <ul>
+        <li>Each flip lands Heads (H) or Tails (T) randomly</li>
+        <li>Match the previous flip to start a streak</li>
+        <li>Every flip that extends a streak of 2+ earns <strong style="color:#c09030">+2 points</strong></li>
+        <li>Breaking the streak resets it to 1 — no points</li>
+      </ul>
+    </div>
+
+    <!-- Input -->
+    <div class="input-group">
+      <label class="input-label" for="flip-count">Number of Flips to Simulate</label>
+      <div class="input-row">
+        <input class="game-input" id="flip-count" type="number" min="1" max="200" placeholder="Enter 1 – 200"/>
+        <button class="btn btn-flip" id="btn-flip" onclick="startGame()">FLIP ▶</button>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-banner" id="result-banner">
+      <div class="result-title">Final Score</div>
+      <div class="result-score" id="result-score">0</div>
+      <div class="result-pts">POINTS</div>
+      <div class="result-summary" id="result-summary"></div>
+    </div>
+
+    <button class="btn btn-reset" onclick="resetGame()">↺ RESET GAME</button>
+
+  </div>
+</div>
+
+<script>
+  // ── Game Logic (mirrors the C++ exactly) ──────────────────────────
+  function flipCoin() {
+    return Math.random() < 0.5 ? 'H' : 'T';
+  }
+
+  function updateScore(current, previous, streakRef) {
+    if (current === previous) {
+      streakRef.value++;
+      return streakRef.value >= 2 ? 2 : 0;
+    } else {
+      streakRef.value = 1;
+      return 0;
+    }
+  }
+
+  // ── State ─────────────────────────────────────────────────────────
+  let flipQueue = [];
+  let flipping = false;
+
+  function startGame() {
+    const input = document.getElementById('flip-count');
+    const total = parseInt(input.value);
+
+    if (!total || total < 1 || total > 200) {
+      input.focus();
+      input.style.borderColor = '#cc3030';
+      setTimeout(() => input.style.borderColor = '', 800);
+      return;
+    }
+
+    resetGame(false);
+
+    // Pre-compute all flips (like the C++ for loop)
+    const results = [];
+    let prev = null;
+    let streakRef = { value: 1 };
+    let score = 0;
+
+    for (let i = 0; i < total; i++) {
+      const curr = flipCoin();
+      const pts = prev !== null ? updateScore(curr, prev, streakRef) : 0;
+      score += pts;
+      results.push({ flip: curr, streak: streakRef.value, pts, score });
+      prev = curr;
+    }
+
+    flipQueue = results;
+    document.getElementById('btn-flip').disabled = true;
+    document.getElementById('flip-count').disabled = true;
+    document.getElementById('result-banner').classList.remove('show');
+    document.getElementById('history-chips').innerHTML = '';
+    document.getElementById('stat-left').textContent = total;
+
+    animateFlips(results, total);
+  }
+
+  function animateFlips(results, total) {
+    let idx = 0;
+
+    function next() {
+      if (idx >= results.length) {
+        // Done
+        showResult(results);
+        document.getElementById('btn-flip').disabled = false;
+        document.getElementById('flip-count').disabled = false;
+        document.getElementById('coin-inner').classList.remove('spinning');
+        return;
+      }
+
+      const r = results[idx];
+      const delay = Math.max(60, 400 - idx * 2); // speed up as we go
+
+      // Start spin
+      document.getElementById('coin-inner').classList.add('spinning');
+
+      setTimeout(() => {
+        // Land on result
+        document.getElementById('coin-inner').classList.remove('spinning');
+        document.getElementById('coin-letter').textContent = r.flip;
+
+        // Update stats
+        document.getElementById('stat-left').textContent = total - idx - 1;
+        document.getElementById('stat-score').textContent = r.score;
+
+        const streakEl = document.getElementById('stat-streak');
+        streakEl.textContent = r.streak;
+        if (r.streak >= 2) {
+          streakEl.classList.add('streak-active');
+        } else {
+          streakEl.classList.remove('streak-active');
+        }
+
+        // Add chip to history
+        addChip(r.flip, r.streak >= 2 && idx > 0);
+
+        idx++;
+        setTimeout(next, delay);
+      }, Math.min(delay * 0.6, 120));
+    }
+
+    next();
+  }
+
+  function addChip(flip, isStreak) {
+    const container = document.getElementById('history-chips');
+    const chip = document.createElement('div');
+    chip.className = 'chip chip-' + flip + (isStreak ? ' chip-streak' : '');
+    chip.textContent = flip;
+    chip.style.opacity = '0';
+    chip.style.transform = 'scale(0.5)';
+    container.appendChild(chip);
+    container.scrollTop = container.scrollHeight;
+
+    requestAnimationFrame(() => {
+      chip.style.transition = 'opacity 0.2s, transform 0.2s';
+      chip.style.opacity = '1';
+      chip.style.transform = 'scale(1)';
+    });
+  }
+
+  function showResult(results) {
+    const last = results[results.length - 1];
+    const heads = results.filter(r => r.flip === 'H').length;
+    const tails = results.length - heads;
+
+    document.getElementById('result-score').textContent = last.score;
+    document.getElementById('result-summary').innerHTML =
+      `${results.length} flips total &nbsp;·&nbsp; ${heads} Heads &nbsp;·&nbsp; ${tails} Tails`;
+    document.getElementById('result-banner').classList.add('show');
+  }
+
+  function resetGame(clearInput = true) {
+    if (clearInput) {
+      document.getElementById('flip-count').value = '';
+      document.getElementById('flip-count').disabled = false;
+    }
+    document.getElementById('btn-flip').disabled = false;
+    document.getElementById('coin-inner').classList.remove('spinning');
+    document.getElementById('coin-letter').textContent = '?';
+    document.getElementById('stat-left').textContent = '—';
+    document.getElementById('stat-streak').textContent = '—';
+    document.getElementById('stat-streak').classList.remove('streak-active');
+    document.getElementById('stat-score').textContent = '0';
+    document.getElementById('history-chips').innerHTML =
+      '<span class="chip-placeholder">No flips yet — enter a number below and press Flip!</span>';
+    document.getElementById('result-banner').classList.remove('show');
+  }
+
+  // Enter key support
+  document.getElementById('flip-count').addEventListener('keydown', e => {
+    if (e.key === 'Enter') startGame();
+  });
+</script>
+</body>
+</html>
